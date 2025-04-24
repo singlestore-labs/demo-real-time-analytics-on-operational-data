@@ -1,9 +1,7 @@
-import { Suspense } from "react";
-
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DbInfoCard } from "@/db/info/components/card";
+import { Separator } from "@/components/ui/separator";
+import { DBSection } from "@/db/components/section";
 
 export const dynamic = "force-dynamic";
 
@@ -12,21 +10,21 @@ export default function Home() {
     <>
       <Header />
 
-      <main className="container mx-auto flex flex-1 flex-col gap-4 px-4">
-        <div className="flex flex-wrap items-center gap-4">
-          {(["singlestore", "postgres"] as const).map((name) => (
-            <Suspense
-              key={name}
-              fallback={<Skeleton className="h-[12.5rem] w-[14.375rem] grow md:grow-0" />}
-            >
-              <DbInfoCard
-                key={name}
-                className="grow md:grow-0"
-                db={name}
-              />
-            </Suspense>
-          ))}
-        </div>
+      <main className="relative container mx-auto flex flex-1 flex-wrap items-stretch gap-8 px-4 max-lg:flex-col">
+        <DBSection
+          className="flex-1"
+          db="singlestore"
+        />
+
+        <Separator
+          className="absolute top-0 left-1/2 -translate-x-1/2 max-lg:hidden"
+          orientation="vertical"
+        />
+
+        <DBSection
+          className="flex-1"
+          db="postgres"
+        />
       </main>
 
       <Footer className="mt-8" />

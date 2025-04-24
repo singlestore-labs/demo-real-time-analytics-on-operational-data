@@ -2,7 +2,7 @@ import { postgres } from "@repo/postgres/index";
 import { accountsTable, transactionsTable, usersTable } from "@repo/postgres/schema";
 import { count } from "drizzle-orm";
 
-export async function getDbInfo() {
+export async function getDBInfo() {
   const [users, accounts, transactions] = (await Promise.all(
     [usersTable, accountsTable, transactionsTable].map(async (table) => {
       const result = await postgres.select({ count: count(table.id) }).from(table);

@@ -1,63 +1,70 @@
-import * as postgres from "@repo/postgres/info/get";
-import * as singlestore from "@repo/singlestore/info/get";
+"use client";
 import type { DB } from "@repo/types/db";
-import { type ComponentProps } from "react";
+import type { WithMS } from "@repo/utils/with-ms";
+import { type ComponentProps, useEffect, useState } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TimeLabel } from "@/components/time-label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { DBInfo } from "@/db/info/types";
 import { cn } from "@/lib/utils";
 
-export type DbInfoCards = ComponentProps<"div"> & { db: DB };
+export type DBInfoCards = ComponentProps<"div"> & { db: DB };
 
-const DB_CONFIGS = {
-  singlestore: {
-    title: "SingleStore",
-  },
-  postgres: {
-    title: "Postgres",
-  },
-} satisfies Record<DB, { title: string }>;
+export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
+  const [data, setData] = useState<WithMS<DBInfo> | undefined>();
+  const [isPending, setIsPending] = useState(true);
 
-export async function DbInfoCard({ className, db, ...props }: DbInfoCards) {
-  const config = DB_CONFIGS[db];
-
-  let value: DBInfo | undefined;
-  try {
-    if (db === "singlestore") {
-      value = await singlestore.getDbInfo();
-    } else if (db === "postgres") {
-      value = await postgres.getDbInfo();
+  useEffect(() => {
+    if (!data) {
+      (async () => {
+        try {
+          setIsPending(true);
+          const response = await fetch(`/api/db/info?${new URLSearchParams({ db }).toString()}`);
+          const data = await response.json();
+          setData(data);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsPending(false);
+        }
+      })();
     }
-  } catch (error) {
-    console.error(error);
-  }
+  }, [data, db]);
 
   return (
     <Card
       {...props}
       className={cn("", className)}
     >
-      <CardHeader>
-        <CardTitle>{config.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2 text-sm font-medium">
-          <p className="min-w-[6rem]">Table</p>
-          <p>Rows</p>
-        </div>
-        <ul className="mt-2 flex flex-col gap-2 text-sm">
-          {Object.entries({ Users: value?.users, Accounts: value?.accounts, Transactions: value?.transactions }).map(
-            ([key, value]) => (
-              <li
-                key={key}
-                className="flex items-center gap-2"
-              >
-                <span className="min-w-[6rem]">{key}</span>
-                <span>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value || 0)}</span>
-              </li>
-            ),
-          )}
+      <CardContent className="flex flex-wrap items-center gap-2">
+        <ul className="flex flex-wrap gap-4 text-sm max-md:flex-col max-md:gap-1">
+          {Object.entries({
+            Users: data?.value.users,
+            Accounts: data?.value.accounts,
+            Transactions: data?.value.transactions,
+          }).map(([key, value]) => (
+            <li
+              key={key}
+              className="flex items-center gap-1"
+            >
+              <span className="font-medium">{key}:</span>
+              <span>
+                {isPending ? (
+                  <Skeleton className="h-6 w-12" />
+                ) : (
+                  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value || 0)
+                )}
+              </span>
+            </li>
+          ))}
         </ul>
+
+        <TimeLabel
+          className="ml-auto"
+          ms={data?.ms}
+          isPending={isPending}
+        />
       </CardContent>
     </Card>
   );
