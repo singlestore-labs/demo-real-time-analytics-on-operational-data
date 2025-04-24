@@ -1,15 +1,17 @@
 import { faker } from "@faker-js/faker";
 import type { AccountRecord } from "@repo/types/account";
-import type { TransactionRecord, TransactionStatusRecord, TransactionTypeRecord } from "@repo/types/transaction";
+import type { TransactionRecord } from "@repo/types/transaction";
 import type { UserRecord } from "@repo/types/user";
+import { generateAccount } from "@repo/utils/account";
+import { generateTransaction, TRANSACTION_STATUSES, TRANSACTION_TYPES } from "@repo/utils/transaction";
+import { generateUser } from "@repo/utils/user";
 import { once } from "events";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { resolve } from "path";
 
-const NOW = new Date();
-const USERS_NUMBER = 1_000_000;
-const ACCOUNTS_NUMBER = 10_000_000;
-const TRANSACTIONS_NUMBER = 100_000_000;
+const USERS_NUMBER = 10_000;
+const ACCOUNTS_NUMBER = 10_000;
+const TRANSACTIONS_NUMBER = 10_000;
 
 const EXPORT_PATH = "./export";
 const CHUNK_SIZE = 1_000_000;
@@ -28,18 +30,6 @@ function printProgress(label: string, count: number) {
 function toSQLDate(date: Date) {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
-
-const TRANSACTION_TYPES = [
-  { id: 1, name: "transfer" },
-  { id: 2, name: "withdrawal" },
-  { id: 3, name: "deposit" },
-] satisfies TransactionTypeRecord[];
-
-const TRANSACTION_STATUSES = [
-  { id: 1, name: "success" },
-  { id: 2, name: "failed" },
-  { id: 3, name: "pending" },
-] satisfies TransactionStatusRecord[];
 
 async function generateChunkedCsv<T>(
   count: number,
@@ -105,13 +95,7 @@ async function generateUsers() {
   await generateChunkedCsv<UserRecord>(
     USERS_NUMBER,
     (i) => {
-      return {
-        id: i + 1,
-        email: faker.internet.email(),
-        name: faker.person.fullName(),
-        createdAt: NOW,
-        updatedAt: NOW,
-      };
+      return generateUser({ id: i + 1 });
     },
     "users",
     (record) => {
@@ -128,13 +112,10 @@ async function generateAccounts() {
   await generateChunkedCsv<AccountRecord>(
     ACCOUNTS_NUMBER,
     (i) => {
-      return {
+      return generateAccount({
         id: i + 1,
         userId: faker.number.int({ min: 1, max: USERS_NUMBER }),
-        balance: faker.finance.amount({ dec: 2 }),
-        createdAt: NOW,
-        updatedAt: NOW,
-      };
+      });
     },
     "accounts",
     (record) => {
@@ -153,24 +134,23 @@ async function generateTransactions() {
     (i) => {
       const from = faker.number.int({ min: 1, max: ACCOUNTS_NUMBER });
       let to = faker.number.int({ min: 1, max: ACCOUNTS_NUMBER });
+
       while (to === from) {
         to = faker.number.int({ min: 1, max: ACCOUNTS_NUMBER });
       }
-      return {
+
+      return generateTransaction({
         id: i + 1,
         accountIdFrom: from,
         accountIdTo: to,
-        typeId: faker.helpers.arrayElement(TRANSACTION_TYPES).id,
-        statusId: faker.helpers.arrayElement(TRANSACTION_STATUSES).id,
-        amount: faker.finance.amount({ dec: 2 }),
-        createdAt: NOW,
-      };
+      });
     },
     "transactions",
     (record) => {
       return Object.values({
         ...record,
         createdAt: toSQLDate(record.createdAt),
+        updatedAt: toSQLDate(record.updatedAt),
       }).join(",");
     },
   );

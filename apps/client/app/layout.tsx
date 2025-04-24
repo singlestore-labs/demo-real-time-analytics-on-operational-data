@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Docker Benchmarking Battle - SingleStore",
+  title: "Real-Time Analytics on Operational Data - SingleStore",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -18,7 +18,7 @@ export function Header({ className, ...props }: HeaderProps) {
           <Logo className="w-full shrink-0 [&_[fill]]:fill-current [&_[stroke]]:stroke-current" />
         </span>
         <span className="bg-border h-8 w-px" />
-        <h1 className="text-xl">Docker Benchmarking Battle</h1>
+        <h1 className="text-xl">Real-Time Analytics on Operational Data</h1>
       </div>
 
       <Button asChild>

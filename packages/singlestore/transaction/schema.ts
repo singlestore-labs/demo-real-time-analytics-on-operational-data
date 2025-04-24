@@ -27,6 +27,7 @@ export const transactionsTable = singlestoreTable("transactions", {
   statusId: transactionStatusId.notNull(),
   amount: decimal({ precision: 18, scale: 2 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
 export const transactionId = bigint("transaction_id", { mode: "number" });

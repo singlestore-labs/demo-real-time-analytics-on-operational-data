@@ -1,4 +1,4 @@
-# Demo: Real Time Analytics
+# Demo: Real Time Analytics on Operational Data
 
 ## Getting Started
 
