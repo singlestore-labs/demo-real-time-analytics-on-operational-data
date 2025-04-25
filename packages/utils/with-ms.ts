@@ -1,4 +1,4 @@
-export type WithMS<T> = { value: T; ms: number };
+export type WithMS<T> = { value: T; ms?: number };
 
 export async function withMS<T extends () => Promise<any>>(fn: T): Promise<WithMS<Awaited<ReturnType<T>>>> {
   const start = performance.now();

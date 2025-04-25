@@ -12,7 +12,7 @@ export default function Home() {
 
       <main className="relative container mx-auto flex flex-1 flex-wrap items-stretch gap-8 px-4 max-lg:flex-col">
         <DBSection
-          className="flex-1"
+          className="w-[calc(50%_-_theme(spacing.4))]"
           db="singlestore"
         />
 
@@ -22,7 +22,7 @@ export default function Home() {
         />
 
         <DBSection
-          className="flex-1"
+          className="w-[calc(50%_-_theme(spacing.4))]"
           db="postgres"
         />
       </main>

@@ -17,6 +17,8 @@ export type DBTableProps<TData> = CardProps & {
   pageSize?: number;
   isDisabled?: boolean;
   onPaginationChange?: (state: PaginationState) => void;
+  headerClassName?: string;
+  headerChildren?: ReactNode;
 };
 
 export function DBTable<TData>({
@@ -29,6 +31,8 @@ export function DBTable<TData>({
   pageSize = 10,
   isDisabled,
   onPaginationChange,
+  headerClassName,
+  headerChildren,
   ...props
 }: DBTableProps<TData>) {
   const [pagination, setPagination] = useState({ pageIndex, pageSize });
@@ -56,10 +60,11 @@ export function DBTable<TData>({
       {...props}
       className={cn("gap-0", className)}
     >
-      <CardHeader className="border-b">
+      <CardHeader className={cn("border-b", headerClassName)}>
         <CardTitle>
           <h2>{title}</h2>
         </CardTitle>
+        {headerChildren}
       </CardHeader>
       <CardContent className="px-0">
         <DataTable<TData>

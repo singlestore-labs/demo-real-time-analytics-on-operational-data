@@ -20,7 +20,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
       (async () => {
         try {
           setIsPending(true);
-          const response = await fetch(`/api/db/info?${new URLSearchParams({ db }).toString()}`);
+          const response = await fetch(`/api/db/info?${new URLSearchParams({ db })}`);
           const data = await response.json();
           setData(data);
         } catch (error) {
