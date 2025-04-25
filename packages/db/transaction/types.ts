@@ -9,3 +9,8 @@ export type TransactionTypeValues = postgres.TransactionTypeValues | singlestore
 
 export type TransactionStatusRecord = postgres.TransactionStatusRecord | singlestore.TransactionStatusRecord;
 export type TransactionStatusValues = postgres.TransactionStatusValues | singlestore.TransactionStatusValues;
+
+export type Transaction = Omit<TransactionRecord, "typeId" | "statusId"> & {
+  type: TransactionTypeRecord["name"];
+  status: TransactionStatusRecord["name"];
+};

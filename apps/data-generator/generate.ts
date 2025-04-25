@@ -9,9 +9,9 @@ import { once } from "events";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { resolve } from "path";
 
-const USERS_NUMBER = 10_000;
-const ACCOUNTS_NUMBER = 10_000;
-const TRANSACTIONS_NUMBER = 10_000;
+const USERS_NUMBER = 1_000_000;
+const ACCOUNTS_NUMBER = 10_000_000;
+const TRANSACTIONS_NUMBER = 100_000_000;
 
 const EXPORT_PATH = "./export";
 const CHUNK_SIZE = 1_000_000;
