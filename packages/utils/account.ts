@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import type { AccountRecord, AccountValues } from "@repo/types/account";
+import type { AccountRecord, AccountValues } from "@repo/db/account/types";
 
 export function generateAccount<T extends AccountValues>(values?: T) {
   const now = new Date();

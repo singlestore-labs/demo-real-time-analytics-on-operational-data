@@ -1,9 +1,11 @@
-import { DB } from "@repo/types/db";
+import type { DB } from "@repo/db/types";
 import { type ComponentProps, type ReactNode } from "react";
 
+import { DBTable } from "@/db/components/table";
 import { DBInfoCard } from "@/db/info/components/card";
 import { cn } from "@/lib/utils";
 import Logo from "@/public/logo.svg";
+import { UsersTable } from "@/user/table/components";
 
 export type DBSectionProps = ComponentProps<"section"> & { db: DB };
 
@@ -22,13 +24,11 @@ export function DBSection({ className, db, ...props }: DBSectionProps) {
   return (
     <section
       {...props}
-      className={cn("", className)}
+      className={cn("flex flex-col gap-8", className)}
     >
       <div className="min-h-8">{config.title}</div>
-      <DBInfoCard
-        className="mt-8"
-        db={db}
-      />
+      <DBInfoCard db={db} />
+      <UsersTable db={db} />
     </section>
   );
 }

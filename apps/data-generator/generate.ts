@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
-import type { AccountRecord } from "@repo/types/account";
-import type { TransactionRecord } from "@repo/types/transaction";
-import type { UserRecord } from "@repo/types/user";
+import type { AccountRecord } from "@repo/db/account/types";
+import type { TransactionRecord } from "@repo/db/transaction/types";
+import type { UserRecord } from "@repo/db/user/types";
 import { generateAccount } from "@repo/utils/account";
 import { generateTransaction, TRANSACTION_STATUSES, TRANSACTION_TYPES } from "@repo/utils/transaction";
 import { generateUser } from "@repo/utils/user";

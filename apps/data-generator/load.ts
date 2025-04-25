@@ -1,6 +1,6 @@
+import type { DB } from "@repo/db/types";
 import { postgresPool } from "@repo/postgres";
 import { singlestore } from "@repo/singlestore";
-import type { DB } from "@repo/types/db";
 import { sql } from "drizzle-orm";
 import { createReadStream, existsSync } from "fs";
 import { resolve } from "path";

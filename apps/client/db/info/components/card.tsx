@@ -1,5 +1,5 @@
 "use client";
-import type { DB } from "@repo/types/db";
+import type { DB } from "@repo/db/types";
 import type { WithMS } from "@repo/utils/with-ms";
 import { type ComponentProps, useEffect, useState } from "react";
 

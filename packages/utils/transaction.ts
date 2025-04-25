@@ -4,7 +4,7 @@ import type {
   TransactionStatusRecord,
   TransactionTypeRecord,
   TransactionValues,
-} from "@repo/types/transaction";
+} from "@repo/db/transaction/types";
 
 export const TRANSACTION_TYPES = [
   { id: 1, name: "transfer" },

@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.2.2",
     "@radix-ui/react-separator": "^1.1.3",
     "@radix-ui/react-slot": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.3",
@@ -29,10 +30,9 @@
     "tw-animate-css": "^1.2.5"
   },
   "devDependencies": {
+    "@repo/db": "*",
     "@repo/errors": "*",
     "@repo/eslint-config": "*",
-    "@repo/postgres": "*",
-    "@repo/singlestore": "*",
     "@repo/typescript-config": "*",
     "@repo/utils": "*",
     "@svgr/webpack": "^8.1.0",
