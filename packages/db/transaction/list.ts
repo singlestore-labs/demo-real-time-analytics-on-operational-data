@@ -20,12 +20,13 @@ export async function listTransactions(db: DB, options: ListTransactionsOptions 
     getDBTable(db, "transactionStatusesTable"),
   ];
 
-  const query = driver
+  const [{ count }] = await driver.select({ count: sql<number>`count(${transactionsTable.id})` }).from(transactionsTable);
+
+  const query = await driver
     .select({
       ...getTableColumns(transactionsTable),
       type: transactionTypesTable.name,
       status: transactionStatusesTable.name,
-      count: sql<number>`count(${transactionsTable.id}) OVER ()`.as("count"),
     })
     .from(transactionsTable)
     .innerJoin(transactionTypesTable, eq(transactionTypesTable.id, transactionsTable.typeId))
@@ -36,5 +37,5 @@ export async function listTransactions(db: DB, options: ListTransactionsOptions 
 
   const result = await query;
 
-  return [result, { limit, offset, count: result[0]?.count || 0 }];
+  return [result, { limit, offset, count }];
 }

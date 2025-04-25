@@ -2,7 +2,7 @@
 
 import type { DB } from "@repo/db/types";
 import type { ListUsersOptions, ListUsersResult } from "@repo/db/user/list";
-import type { WithMS } from "@repo/utils/with-ms";
+import { type WithMS, withMS } from "@repo/utils/with-ms";
 import { useCallback, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
@@ -14,13 +14,9 @@ import type { UsersTableData } from "@/user/table/types";
 export type UsersTableProps = Omit<DBTableProps<UsersTableData>, "columns" | "data"> & { db: DB };
 
 export function UsersTable({ className, db, ...props }: UsersTableProps) {
+  const [data, setData] = useState<WithMS<ListUsersResult>>([[[], { limit: 10, offset: 0, count: 0 }]]);
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
-
-  const [data, setData] = useState<WithMS<ListUsersResult>>({
-    value: [[], { limit: 10, offset: 0, count: 0 }],
-    ms: undefined,
-  });
 
   const fetchData = useCallback(
     async (options: ListUsersOptions = {}) => {
@@ -35,14 +31,14 @@ export function UsersTable({ className, db, ...props }: UsersTableProps) {
           offset: offset.toString(),
         });
 
-        const response = await fetch(`/api/users?${params}`);
-        const data: WithMS<ListUsersResult> = await response.json();
-        setData({ value: data.value, ms: data.ms });
-        setHasFetched(true);
+        const [response, ms] = await withMS(() => fetch(`/api/users?${params}`));
+        const value: ListUsersResult = await response.json();
+        setData([value, ms]);
       } catch (error) {
         console.error(error);
       } finally {
         setIsPending(false);
+        setHasFetched(true);
       }
     },
     [db],
@@ -64,18 +60,18 @@ export function UsersTable({ className, db, ...props }: UsersTableProps) {
       {...props}
       className={cn("", className)}
       title="Users"
-      data={data.value[0]}
+      data={data[0][0]}
       columns={USERS_TABLE_COLUMNS}
-      rowCount={data.value[1].count}
-      pageIndex={Math.floor(data.value[1].offset / data.value[1].limit)}
-      pageSize={data.value[1].limit}
+      rowCount={data[0][1].count}
+      pageIndex={Math.floor(data[0][1].offset / data[0][1].limit)}
+      pageSize={data[0][1].limit}
       isDisabled={isPending}
       onPaginationChange={handlePaginationChange}
       headerClassName="flex items-center [.border-b]:pb-6 gap-2"
       headerChildren={
         <TimeLabel
           className="ml-auto"
-          ms={data.ms}
+          ms={data[1]}
           isPending={isPending}
         />
       }

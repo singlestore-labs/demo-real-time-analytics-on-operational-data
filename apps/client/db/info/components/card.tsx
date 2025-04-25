@@ -1,6 +1,6 @@
 "use client";
 import type { DB } from "@repo/db/types";
-import type { WithMS } from "@repo/utils/with-ms";
+import { type WithMS, withMS } from "@repo/utils/with-ms";
 import { type ComponentProps, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
@@ -12,25 +12,28 @@ import { cn } from "@/lib/utils";
 export type DBInfoCards = ComponentProps<"div"> & { db: DB };
 
 export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
-  const [data, setData] = useState<WithMS<DBInfo> | undefined>();
+  const [data, setData] = useState<WithMS<DBInfo>>([{ accounts: 0, transactions: 0, users: 0 }]);
   const [isPending, setIsPending] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    if (!data) {
+    if (!hasFetched) {
       (async () => {
+        setIsPending(true);
+
         try {
-          setIsPending(true);
-          const response = await fetch(`/api/db/info?${new URLSearchParams({ db })}`);
-          const data = await response.json();
-          setData(data);
+          const [response, ms] = await withMS(() => fetch(`/api/db/info?${new URLSearchParams({ db })}`));
+          const value = await response.json();
+          setData([value, ms]);
         } catch (error) {
           console.error(error);
         } finally {
           setIsPending(false);
+          setHasFetched(true);
         }
       })();
     }
-  }, [data, db]);
+  }, [db, hasFetched]);
 
   return (
     <Card
@@ -40,9 +43,9 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
       <CardContent className="flex flex-wrap items-center gap-2">
         <ul className="flex flex-wrap gap-4 text-sm max-md:flex-col max-md:gap-1">
           {Object.entries({
-            Users: data?.value.users,
-            Accounts: data?.value.accounts,
-            Transactions: data?.value.transactions,
+            Users: data[0].users,
+            Accounts: data[0].accounts,
+            Transactions: data[0].transactions,
           }).map(([key, value]) => (
             <li
               key={key}
@@ -62,7 +65,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
 
         <TimeLabel
           className="ml-auto"
-          ms={data?.ms}
+          ms={data[1]}
           isPending={isPending}
         />
       </CardContent>
