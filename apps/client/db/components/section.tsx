@@ -3,6 +3,7 @@ import { type ComponentProps, type ReactNode } from "react";
 
 import { TopRecipientCard } from "@/account/components/top-recipient-card";
 import { AccountsTable } from "@/account/table/components";
+import { Separator } from "@/components/ui/separator";
 import { DBInfoCard } from "@/db/info/components/card";
 import { cn } from "@/lib/utils";
 import Logo from "@/public/logo.svg";
@@ -30,12 +31,20 @@ export function DBSection({ className, db, ...props }: DBSectionProps) {
       className={cn("flex flex-col gap-8", className)}
     >
       <div className="min-h-8">{config.title}</div>
-      <DBInfoCard db={db} />
-      <TransactionSumCard db={db} />
-      <TopRecipientCard db={db} />
-      <TransactionsTable db={db} />
-      <AccountsTable db={db} />
-      <UsersTable db={db} />
+
+      <div className="flex flex-col gap-4">
+        <DBInfoCard db={db} />
+        <TransactionSumCard db={db} />
+        <TopRecipientCard db={db} />
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-4">
+        <TransactionsTable db={db} />
+        <AccountsTable db={db} />
+        <UsersTable db={db} />
+      </div>
     </section>
   );
 }

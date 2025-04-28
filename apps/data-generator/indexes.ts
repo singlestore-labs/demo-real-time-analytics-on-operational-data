@@ -3,12 +3,20 @@ import { singlestore } from "@repo/singlestore";
 import { sql } from "drizzle-orm";
 
 const indexQueries = [
-  `CREATE INDEX user_id_idx ON accounts (user_id);`,
-  `CREATE INDEX account_id_from_idx ON transactions (account_id_from);`,
-  `CREATE INDEX account_id_to_idx ON transactions (account_id_to);`,
-  `CREATE INDEX type_id_idx ON transactions (transaction_type_id);`,
-  `CREATE INDEX status_id_idx ON transactions (transaction_status_id);`,
-  `CREATE INDEX type_status_idx ON transactions (transaction_type_id, transaction_status_id);`,
+  // For the 30-day sum by status
+  `CREATE INDEX idx_transactions_status_created_at ON transactions (transaction_status_id, created_at);`,
+
+  // For “top recipient of successful transfers”
+  `CREATE INDEX idx_txn_type_status_account ON transactions (transaction_type_id, transaction_status_id, account_id_to);`,
+
+  // For efficient pagination of transactions by newest first
+  `CREATE INDEX idx_txns_created_at_id ON transactions (created_at, id);`,
+
+  // For efficient pagination of accounts by newest first
+  `CREATE INDEX idx_accounts_created_at_id ON accounts (created_at, id);`,
+
+  // For efficient pagination of users by newest first
+  `CREATE INDEX idx_users_created_at_id ON users (created_at, id);`,
 ];
 
 (async () => {
