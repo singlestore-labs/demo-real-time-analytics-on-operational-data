@@ -1,10 +1,12 @@
 import type { DB } from "@repo/db/types";
 import { type ComponentProps, type ReactNode } from "react";
 
+import { TopRecipientCard } from "@/account/components/top-recipient-card";
 import { AccountsTable } from "@/account/table/components";
 import { DBInfoCard } from "@/db/info/components/card";
 import { cn } from "@/lib/utils";
 import Logo from "@/public/logo.svg";
+import { TransactionSumCard } from "@/transaction/components/sum-card";
 import { TransactionsTable } from "@/transaction/table/components";
 import { UsersTable } from "@/user/table/components";
 
@@ -29,6 +31,8 @@ export function DBSection({ className, db, ...props }: DBSectionProps) {
     >
       <div className="min-h-8">{config.title}</div>
       <DBInfoCard db={db} />
+      <TransactionSumCard db={db} />
+      <TopRecipientCard db={db} />
       <TransactionsTable db={db} />
       <AccountsTable db={db} />
       <UsersTable db={db} />

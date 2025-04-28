@@ -1,5 +1,6 @@
 "use client";
 import type { DB } from "@repo/db/types";
+import { formatNumber } from "@repo/utils/format-number";
 import { type WithMS, withMS } from "@repo/utils/with-ms";
 import { type ComponentProps, useEffect, useState } from "react";
 
@@ -52,13 +53,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
               className="flex items-center gap-1"
             >
               <span className="font-medium">{key}:</span>
-              <span>
-                {isPending ? (
-                  <Skeleton className="h-6 w-12" />
-                ) : (
-                  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value || 0)
-                )}
-              </span>
+              <span>{isPending ? <Skeleton className="h-6 w-12" /> : formatNumber(value ?? 0)}</span>
             </li>
           ))}
         </ul>
