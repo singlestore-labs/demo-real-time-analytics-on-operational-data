@@ -14,9 +14,9 @@
     "@repo/eslint-config": "*",
     "@repo/postgres": "*",
     "@repo/singlestore": "*",
-    "@repo/types": "*",
     "@repo/typescript-config": "*",
     "@repo/utils": "*",
+    "@repo/ws": "*",
     "@types/pg-copy-streams": "^1.2.5",
     "dotenv-cli": "^8.0.0",
     "tsx": "^4.19.3"

@@ -1,0 +1,15 @@
+{
+  "name": "@repo/ws",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@repo/errors": "*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  }
+}

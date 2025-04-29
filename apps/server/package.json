@@ -1,0 +1,23 @@
+{
+  "name": "server",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -- tsx watch ./index.ts",
+    "start": "dotenv -- tsx ./index.ts",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/db": "*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@repo/utils": "*",
+    "dotenv-cli": "^8.0.0",
+    "tsx": "^4.19.3"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.0.2",
+    "fastify": "^5.3.2"
+  }
+}
