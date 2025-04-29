@@ -8,6 +8,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@repo/db": "*",
     "@repo/errors": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*"

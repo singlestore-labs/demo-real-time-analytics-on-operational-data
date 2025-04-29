@@ -69,6 +69,7 @@ async function loadFileToPostgres(client: any, tableName: string, path: string) 
           SET autocommit = 1;
           SET unique_checks = 1;
           SET foreign_key_checks = 1;
+          AGGREGATOR SYNC AUTO_INCREMENT;
       `),
       );
     });
@@ -86,6 +87,15 @@ async function loadFileToPostgres(client: any, tableName: string, path: string) 
             console.log(`[postgres] Loading ${filePath} → ${table}`);
             await loadFileToPostgres(client, table, filePath);
           }
+
+          await client.query(`
+            SELECT setval(
+              pg_get_serial_sequence('${table}', 'id'), (
+                SELECT COALESCE(MAX(id), 0)
+                FROM ${table}
+              ) + 1, false
+            );
+          `);
         }
 
         await client.query(`SET session_replication_role = 'origin';`);
