@@ -1,23 +1,27 @@
 import { fastifyWebsocket } from "@fastify/websocket";
-import { parseWSMessage } from "@repo/ws/message/parse";
 import Fastify from "fastify";
 
 const app = Fastify({ logger: true });
 
+const wsClients = new Set<WebSocket>();
+
 app.register(fastifyWebsocket);
 
 app.register(async function (app) {
-  app.get("/", { websocket: true }, (ws, req) => {
-    ws.on("message", async (data: string | Buffer) => {
-      try {
-        const message = parseWSMessage(data);
-        console.log(message);
-      } catch (error) {
-        app.log.error("Error processing WebSocket message:", error);
-      }
-    });
+  app.get("/", { websocket: true }, (ws) => {
+    wsClients.add(ws);
+    ws.on("close", () => wsClients.delete(ws));
   });
 });
+
+function broadcast(event: unknown) {
+  const data = JSON.stringify(event);
+  for (const client of wsClients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  }
+}
 
 try {
   await app.listen({ port: 4000 });
