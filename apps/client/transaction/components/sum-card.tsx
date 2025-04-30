@@ -4,12 +4,14 @@ import { GetTransactionsSumResult } from "@repo/db/transaction/get-sum";
 import type { DB } from "@repo/db/types";
 import { toCurrency } from "@repo/utils/to-currency";
 import { WithMS, withMS } from "@repo/utils/with-ms";
+import { parseWSMessage } from "@repo/ws/message/parse";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useWS } from "@/ws/hooks/use";
 
 export type TransactionSumCardProps = ComponentProps<"div"> & { db: DB };
 
@@ -17,6 +19,7 @@ export function TransactionSumCard({ className, db, ...props }: TransactionSumCa
   const [data, setData] = useState<WithMS<GetTransactionsSumResult>>([0]);
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const ws = useWS();
 
   const fetchData = useCallback(async () => {
     setIsPending(true);
@@ -39,6 +42,25 @@ export function TransactionSumCard({ className, db, ...props }: TransactionSumCa
       fetchData();
     }
   }, [hasFetched, fetchData]);
+
+  useEffect(() => {
+    if (!ws || !hasFetched) return;
+
+    const messageHandler = (event: MessageEvent) => {
+      const message = parseWSMessage(event.data);
+      if (message.db !== db) return;
+
+      if (message.type === "insert.transaction") {
+        fetchData();
+      }
+    };
+
+    ws.addEventListener("message", messageHandler);
+
+    return () => {
+      ws.removeEventListener("message", messageHandler);
+    };
+  }, [db, ws, hasFetched, fetchData]);
 
   return (
     <Card

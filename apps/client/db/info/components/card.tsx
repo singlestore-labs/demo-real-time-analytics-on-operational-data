@@ -2,13 +2,15 @@
 import type { DB } from "@repo/db/types";
 import { formatNumber } from "@repo/utils/format-number";
 import { type WithMS, withMS } from "@repo/utils/with-ms";
-import { type ComponentProps, useEffect, useState } from "react";
+import { parseWSMessage } from "@repo/ws/message/parse";
+import { type ComponentProps, useCallback, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DBInfo } from "@/db/info/types";
 import { cn } from "@/lib/utils";
+import { useWS } from "@/ws/hooks/use";
 
 export type DBInfoCards = ComponentProps<"div"> & { db: DB };
 
@@ -16,25 +18,47 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
   const [data, setData] = useState<WithMS<DBInfo>>([{ accounts: 0, transactions: 0, users: 0 }]);
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const ws = useWS();
+
+  const fetchData = useCallback(async () => {
+    setIsPending(true);
+
+    try {
+      const [response, ms] = await withMS(() => fetch(`/api/db/info?${new URLSearchParams({ db })}`));
+      const value = await response.json();
+      setData([value, ms]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsPending(false);
+      setHasFetched(true);
+    }
+  }, [db]);
 
   useEffect(() => {
     if (!hasFetched) {
-      (async () => {
-        setIsPending(true);
-
-        try {
-          const [response, ms] = await withMS(() => fetch(`/api/db/info?${new URLSearchParams({ db })}`));
-          const value = await response.json();
-          setData([value, ms]);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setIsPending(false);
-          setHasFetched(true);
-        }
-      })();
+      fetchData();
     }
-  }, [db, hasFetched]);
+  }, [hasFetched, fetchData]);
+
+  useEffect(() => {
+    if (!ws || !hasFetched) return;
+
+    const messageHandler = (event: MessageEvent) => {
+      const message = parseWSMessage(event.data);
+      if (message.db !== db) return;
+
+      if (message.type.startsWith("insert")) {
+        fetchData();
+      }
+    };
+
+    ws.addEventListener("message", messageHandler);
+
+    return () => {
+      ws.removeEventListener("message", messageHandler);
+    };
+  }, [db, ws, hasFetched, fetchData]);
 
   return (
     <Card

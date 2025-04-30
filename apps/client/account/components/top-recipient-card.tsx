@@ -4,12 +4,14 @@ import { GetTopRecipientResult } from "@repo/db/account/get-top-recipient";
 import type { DB } from "@repo/db/types";
 import { formatNumber } from "@repo/utils/format-number";
 import { WithMS, withMS } from "@repo/utils/with-ms";
+import { parseWSMessage } from "@repo/ws/message/parse";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useWS } from "@/ws/hooks/use";
 
 export type TopRecipientCardProps = ComponentProps<"div"> & { db: DB };
 
@@ -17,6 +19,7 @@ export function TopRecipientCard({ className, db, ...props }: TopRecipientCardPr
   const [data, setData] = useState<WithMS<GetTopRecipientResult>>([undefined]);
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const ws = useWS();
 
   const fetchData = useCallback(async () => {
     setIsPending(true);
@@ -39,6 +42,25 @@ export function TopRecipientCard({ className, db, ...props }: TopRecipientCardPr
       fetchData();
     }
   }, [hasFetched, fetchData]);
+
+  useEffect(() => {
+    if (!ws || !hasFetched) return;
+
+    const messageHandler = (event: MessageEvent) => {
+      const message = parseWSMessage(event.data);
+      if (message.db !== db) return;
+
+      if (message.type === "insert.transaction") {
+        fetchData();
+      }
+    };
+
+    ws.addEventListener("message", messageHandler);
+
+    return () => {
+      ws.removeEventListener("message", messageHandler);
+    };
+  }, [db, ws, hasFetched, fetchData]);
 
   return (
     <Card
