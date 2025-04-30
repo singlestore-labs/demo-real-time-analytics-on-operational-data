@@ -2,7 +2,7 @@ import { getDBDriver } from "@repo/db/lib/get-driver";
 import { getDBTable } from "@repo/db/lib/get-table";
 import type { DB } from "@repo/db/types";
 import type { AccountRecord } from "@repo/postgres/account/types";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 
 export type GetTopRecipientResult =
   | {
@@ -30,7 +30,7 @@ export async function getTopRecipient(db: DB): Promise<GetTopRecipientResult> {
     .innerJoin(transactionStatusesTable, eq(transactionStatusesTable.id, transactionsTable.statusId))
     .where(and(eq(transactionTypesTable.name, "transfer"), eq(transactionStatusesTable.name, "success")))
     .groupBy(transactionsTable.accountIdTo)
-    .orderBy(desc(db === "singlestore" ? sql`count` : sql`"count"`))
+    .orderBy(desc(db === "singlestore" ? sql`count` : sql`"count"`), asc(transactionsTable.accountIdTo))
     .limit(1);
 
   return result.at(0);

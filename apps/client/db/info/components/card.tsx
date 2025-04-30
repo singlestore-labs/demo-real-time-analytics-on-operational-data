@@ -77,7 +77,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
               className="flex items-center gap-1"
             >
               <span className="font-medium">{key}:</span>
-              <span>{isPending ? <Skeleton className="h-6 w-12" /> : formatNumber(value ?? 0)}</span>
+              <span>{!hasFetched ? <Skeleton className="h-6 w-12" /> : formatNumber(value ?? 0)}</span>
             </li>
           ))}
         </ul>
