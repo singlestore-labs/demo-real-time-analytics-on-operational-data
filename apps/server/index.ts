@@ -1,5 +1,8 @@
 import { fastifyWebsocket } from "@fastify/websocket";
 import { createAccount } from "@repo/db/account/create";
+import { getRandomAccount } from "@repo/db/account/get-random";
+import { updateAccount } from "@repo/db/account/update";
+import { createTransaction } from "@repo/db/transaction/create";
 import { DB } from "@repo/db/types";
 import { createUser } from "@repo/db/user/create";
 import { generateTransaction } from "@repo/utils/transaction";
@@ -36,11 +39,11 @@ try {
 
   setInterval(async () => {
     try {
-      const user = generateUser();
       const now = new Date();
+      const user = generateUser({ createdAt: now });
       await Promise.all(
         dbs.map(async (db) => {
-          const userRecord = await createUser(db, { ...user, createdAt: now });
+          const userRecord = await createUser(db, user);
           broadcast(createWSMessage({ db, type: "insert.user", payload: userRecord }));
           const accountRecord = await createAccount(db, { userId: userRecord.id, createdAt: now });
           broadcast(createWSMessage({ db, type: "insert.account", payload: accountRecord }));
@@ -53,9 +56,46 @@ try {
 
   setInterval(async () => {
     try {
-      const transaction = generateTransaction();
+      let [accountFrom, accountTo] = await Promise.all([getRandomAccount("singlestore"), getRandomAccount("singlestore")]);
+
+      while (accountTo?.id === accountFrom?.id) {
+        accountTo = await getRandomAccount("singlestore");
+      }
+
       const now = new Date();
-      await Promise.all(dbs.map(async (db) => {}));
+      const transaction = generateTransaction({ accountIdFrom: accountFrom?.id, accountIdTo: accountTo?.id, createdAt: now });
+      const newAccountFromBalance = (+(accountFrom!.balance ?? 0) - +(transaction.amount ?? 0)).toFixed(2);
+      const newAccountToBalance = (+(accountTo!.balance ?? 0) + +(transaction.amount ?? 0)).toFixed(2);
+
+      await Promise.all(
+        dbs.map(async (db) => {
+          const transactionRecord = await createTransaction(db, transaction);
+          broadcast(createWSMessage({ db, type: "insert.transaction", payload: transactionRecord }));
+
+          await Promise.all(
+            [
+              async () => {
+                await updateAccount(db, accountFrom!.id, { balance: newAccountFromBalance });
+                const message = createWSMessage({
+                  db,
+                  type: "update.account",
+                  payload: { ...accountFrom!, balance: newAccountFromBalance },
+                });
+                broadcast(message);
+              },
+              async () => {
+                await updateAccount(db, accountTo!.id, { balance: newAccountToBalance.toString() });
+                const message = createWSMessage({
+                  db,
+                  type: "update.account",
+                  payload: { ...accountTo!, balance: newAccountToBalance },
+                });
+                broadcast(message);
+              },
+            ].map((fn) => fn()),
+          );
+        }),
+      );
     } catch (error) {
       app.log.error(error);
     }

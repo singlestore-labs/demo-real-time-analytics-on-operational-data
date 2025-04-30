@@ -3,23 +3,23 @@ import { getDBDriver } from "@repo/db/lib/get-driver";
 import { getDBTable } from "@repo/db/lib/get-table";
 import type { DB } from "@repo/db/types";
 
-export async function createAccount(db: DB, value: AccountValues): Promise<AccountRecord> {
+export async function createAccount(db: DB, values: AccountValues): Promise<AccountRecord> {
   const driver = getDBDriver(db) as any;
   const [accountsTable] = [getDBTable(db, "accountsTable")];
-  const createdAt = value.createdAt || new Date();
+  const createdAt = values.createdAt || new Date();
 
-  const _value = {
+  const _values = {
     balance: "0",
     createdAt,
     updatedAt: createdAt,
-    ...value,
+    ...values,
   } satisfies Omit<AccountRecord, "id">;
 
-  const query = driver.insert(accountsTable).values(_value);
+  const query = driver.insert(accountsTable).values(_values);
 
   if (db === "singlestore") {
     const result = await query.$returningId();
-    return { ..._value, id: result[0]!.id };
+    return { ..._values, id: result[0]!.id };
   }
 
   const result = await query.returning();

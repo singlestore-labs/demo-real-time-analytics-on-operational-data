@@ -1,5 +1,5 @@
 import { userId } from "@repo/postgres/user/schema";
-import { bigserial, decimal, pgTable, timestamp } from "drizzle-orm/pg-core";
+import { bigint, bigserial, decimal, pgTable, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const accountsTable = pgTable("accounts", {
@@ -13,7 +13,7 @@ export const accountsTable = pgTable("accounts", {
     .$onUpdateFn(() => new Date()),
 });
 
-export const accountId = bigserial("account_id", { mode: "number" });
+export const accountId = bigint("account_id", { mode: "number" });
 
 export const accountRecordSchema = createSelectSchema(accountsTable);
 export const accountValuesSchema = createInsertSchema(accountsTable);

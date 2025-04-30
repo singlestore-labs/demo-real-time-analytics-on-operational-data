@@ -63,10 +63,22 @@ export function AccountsTable({ className, db, ...props }: AccountsTableProps) {
 
     const messageHandler = (event: MessageEvent) => {
       const message = parseWSMessage(event.data);
-      if (message.db === db && message.type === "insert.account") {
+      if (message.db !== db) return;
+
+      if (message.type === "insert.account") {
         setData((data) => {
           if (data[0][1].offset > 0) return data;
           return [[[message.payload, ...data[0][0].slice(0, -1)], { ...data[0][1], count: data[0][1].count + 1 }], data[1]];
+        });
+      }
+
+      if (message.type === "update.account") {
+        setData((data) => {
+          const records = [...data[0][0]];
+          const index = records.findIndex(({ id }) => id === message.payload.id);
+          if (!index) return data;
+          records[index] = message.payload;
+          return [[records, data[0][1]], data[1]];
         });
       }
     };

@@ -12,4 +12,5 @@ type WSMessageBase<T extends string, U> = {
 export type WSMessage =
   | WSMessageBase<"insert.user", UserRecord>
   | WSMessageBase<"insert.account", AccountRecord>
+  | WSMessageBase<"update.account", AccountRecord>
   | WSMessageBase<"insert.transaction", Transaction>;

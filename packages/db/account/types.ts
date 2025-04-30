@@ -2,4 +2,6 @@ import type * as postgres from "@repo/postgres/account/types";
 import type * as singlestore from "@repo/singlestore/account/types";
 
 export type AccountRecord = postgres.AccountRecord | singlestore.AccountRecord;
-export type AccountValues = (Omit<postgres.AccountValues, "userId"> & { userId: number }) | singlestore.AccountValues;
+export type AccountValues = postgres.AccountValues | singlestore.AccountValues;
+
+export type AccountUpdateValues = Partial<Omit<AccountValues, "id">>;
