@@ -37,15 +37,21 @@ export function TimeLabel({ className, label, ms, delay = 400, isPending, ...pro
   return (
     <p
       {...props}
-      className={cn("inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm", !isSpinner && "bg-secondary", className)}
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm",
+        !isSpinner && ms !== undefined && "bg-secondary",
+        className,
+      )}
     >
       {isSpinner ? (
         <Spinner className="ml-auto size-[1.425em]" />
       ) : (
-        <>
-          {label && <span>{label}</span>}
-          <span>{ms ? formatMilliseconds(ms) : "0ms"}</span>
-        </>
+        ms !== undefined && (
+          <>
+            {label && <span>{label}</span>}
+            <span>{ms ? formatMilliseconds(ms) : "0ms"}</span>
+          </>
+        )
       )}
     </p>
   );

@@ -94,7 +94,6 @@ export function UsersTable({ className, db, ...props }: UsersTableProps) {
       headerChildren={
         <TimeLabel
           className="ml-auto"
-          ms={data[1]}
           isPending={isPending}
         />
       }

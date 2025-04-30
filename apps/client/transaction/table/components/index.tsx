@@ -94,7 +94,6 @@ export function TransactionsTable({ className, db, ...props }: TransactionsTable
       headerChildren={
         <TimeLabel
           className="ml-auto"
-          ms={data[1]}
           isPending={isPending}
         />
       }

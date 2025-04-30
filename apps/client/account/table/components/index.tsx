@@ -106,7 +106,6 @@ export function AccountsTable({ className, db, ...props }: AccountsTableProps) {
       headerChildren={
         <TimeLabel
           className="ml-auto"
-          ms={data[1]}
           isPending={isPending}
         />
       }
