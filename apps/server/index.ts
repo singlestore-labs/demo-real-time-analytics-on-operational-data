@@ -1,9 +1,13 @@
 import { fastifyWebsocket } from "@fastify/websocket";
+import { createAccount } from "@repo/db/account/create";
 import { DB } from "@repo/db/types";
 import { createUser } from "@repo/db/user/create";
+import { generateTransaction } from "@repo/utils/transaction";
 import { generateUser } from "@repo/utils/user";
 import { createWSMessage } from "@repo/ws/message/create";
 import Fastify from "fastify";
+
+const NEW_RECORDS_INTERVAL = 5000;
 
 const app = Fastify({ logger: true });
 
@@ -33,13 +37,29 @@ try {
   setInterval(async () => {
     try {
       const user = generateUser();
-      const record = await Promise.all(dbs.map((db) => createUser(db, user)));
-      const message = createWSMessage({ type: "insert.user", payload: record[0]! });
-      broadcast(message);
+      const now = new Date();
+      await Promise.all(
+        dbs.map(async (db) => {
+          const userRecord = await createUser(db, { ...user, createdAt: now });
+          broadcast(createWSMessage({ db, type: "insert.user", payload: userRecord }));
+          const accountRecord = await createAccount(db, { userId: userRecord.id, createdAt: now });
+          broadcast(createWSMessage({ db, type: "insert.account", payload: accountRecord }));
+        }),
+      );
     } catch (error) {
       app.log.error(error);
     }
-  }, 5000);
+  }, NEW_RECORDS_INTERVAL);
+
+  setInterval(async () => {
+    try {
+      const transaction = generateTransaction();
+      const now = new Date();
+      await Promise.all(dbs.map(async (db) => {}));
+    } catch (error) {
+      app.log.error(error);
+    }
+  }, NEW_RECORDS_INTERVAL);
 } catch (error) {
   app.log.error(error);
   process.exit(1);

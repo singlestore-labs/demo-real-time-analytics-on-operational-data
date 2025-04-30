@@ -3,6 +3,7 @@
 import type { ListTransactionsOptions, ListTransactionsResult } from "@repo/db/transaction/list";
 import type { DB } from "@repo/db/types";
 import { type WithMS, withMS } from "@repo/utils/with-ms";
+import { parseWSMessage } from "@repo/ws/message/parse";
 import { useCallback, useEffect, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
@@ -10,6 +11,7 @@ import { DBTable, type DBTableProps } from "@/db/components/table";
 import { cn } from "@/lib/utils";
 import { TRANSACTIONS_TABLE_COLUMNS } from "@/transaction/table/columns";
 import type { TransactionsTableData } from "@/transaction/table/types";
+import { useWS } from "@/ws/hooks/use";
 
 export type TransactionsTableProps = Omit<DBTableProps<TransactionsTableData>, "columns" | "data"> & { db: DB };
 
@@ -17,6 +19,7 @@ export function TransactionsTable({ className, db, ...props }: TransactionsTable
   const [data, setData] = useState<WithMS<ListTransactionsResult>>([[[], { limit: 10, offset: 0, count: 0 }]]);
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const ws = useWS();
 
   const fetchData = useCallback(
     async (options: ListTransactionsOptions = {}) => {
@@ -54,6 +57,26 @@ export function TransactionsTable({ className, db, ...props }: TransactionsTable
       fetchData();
     }
   }, [hasFetched, fetchData]);
+
+  useEffect(() => {
+    if (!ws || !hasFetched) return;
+
+    const messageHandler = (event: MessageEvent) => {
+      const message = parseWSMessage(event.data);
+      if (message.db === db && message.type === "insert.transaction") {
+        setData((data) => {
+          if (data[0][1].offset > 0) return data;
+          return [[[message.payload, ...data[0][0].slice(0, -1)], { ...data[0][1], count: data[0][1].count + 1 }], data[1]];
+        });
+      }
+    };
+
+    ws.addEventListener("message", messageHandler);
+
+    return () => {
+      ws.removeEventListener("message", messageHandler);
+    };
+  }, [db, ws, hasFetched]);
 
   return (
     <DBTable<TransactionsTableData>
