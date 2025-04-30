@@ -5,7 +5,7 @@ import type { DB } from "@repo/db/types";
 import { toCurrency } from "@repo/utils/to-currency";
 import { WithMS, withMS } from "@repo/utils/with-ms";
 import { parseWSMessage } from "@repo/ws/message/parse";
-import { type ComponentProps, useCallback, useEffect, useState } from "react";
+import { type ComponentProps, useCallback, useEffect, useRef, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,9 +20,11 @@ export function TransactionSumCard({ className, db, ...props }: TransactionSumCa
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
   const ws = useWS();
+  const isPendingRef = useRef(isPending);
 
   const fetchData = useCallback(async () => {
     setIsPending(true);
+    isPendingRef.current = true;
 
     try {
       const params = new URLSearchParams({ db });
@@ -34,6 +36,7 @@ export function TransactionSumCard({ className, db, ...props }: TransactionSumCa
     } finally {
       setIsPending(false);
       setHasFetched(true);
+      isPendingRef.current = false;
     }
   }, [db]);
 
@@ -47,6 +50,8 @@ export function TransactionSumCard({ className, db, ...props }: TransactionSumCa
     if (!ws || !hasFetched) return;
 
     const messageHandler = (event: MessageEvent) => {
+      if (isPendingRef.current) return;
+
       const message = parseWSMessage(event.data);
       if (message.db !== db) return;
 

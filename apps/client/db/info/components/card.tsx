@@ -3,7 +3,7 @@ import type { DB } from "@repo/db/types";
 import { formatNumber } from "@repo/utils/format-number";
 import { type WithMS, withMS } from "@repo/utils/with-ms";
 import { parseWSMessage } from "@repo/ws/message/parse";
-import { type ComponentProps, useCallback, useEffect, useState } from "react";
+import { type ComponentProps, useCallback, useEffect, useRef, useState } from "react";
 
 import { TimeLabel } from "@/components/time-label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,9 +19,11 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
   const [isPending, setIsPending] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
   const ws = useWS();
+  const isPendingRef = useRef(isPending);
 
   const fetchData = useCallback(async () => {
     setIsPending(true);
+    isPendingRef.current = true;
 
     try {
       const [response, ms] = await withMS(() => fetch(`/api/db/info?${new URLSearchParams({ db })}`));
@@ -32,6 +34,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
     } finally {
       setIsPending(false);
       setHasFetched(true);
+      isPendingRef.current = false;
     }
   }, [db]);
 
@@ -45,6 +48,8 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
     if (!ws || !hasFetched) return;
 
     const messageHandler = (event: MessageEvent) => {
+      if (isPendingRef.current) return;
+
       const message = parseWSMessage(event.data);
       if (message.db !== db) return;
 

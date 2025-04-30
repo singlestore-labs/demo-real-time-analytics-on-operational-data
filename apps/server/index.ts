@@ -10,7 +10,7 @@ import { generateUser } from "@repo/utils/user";
 import { createWSMessage } from "@repo/ws/message/create";
 import Fastify from "fastify";
 
-const NEW_RECORDS_INTERVAL = 1000;
+const NEW_RECORDS_INTERVAL = 3000;
 
 const app = Fastify({ logger: true });
 
