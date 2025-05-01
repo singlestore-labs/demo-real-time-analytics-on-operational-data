@@ -12,6 +12,7 @@
   "devDependencies": {
     "@repo/errors": "*",
     "@repo/eslint-config": "*",
+    "@repo/mysql": "*",
     "@repo/postgres": "*",
     "@repo/singlestore": "*",
     "@repo/typescript-config": "*"

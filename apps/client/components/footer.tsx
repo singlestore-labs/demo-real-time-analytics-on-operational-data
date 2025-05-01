@@ -11,7 +11,7 @@ export function Footer({ className, ...props }: FooterProps) {
       {...props}
       className={cn("border-t", className)}
     >
-      <div className="container mx-auto flex items-center p-4">
+      <div className="mx-auto flex w-full items-center p-4">
         <Link
           href="https://github.com/singlestore-labs/demo-real-time-analytics-on-operational-data"
           target="_blank"

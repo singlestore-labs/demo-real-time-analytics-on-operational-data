@@ -17,6 +17,11 @@ const DB_CONFIGS = {
   singlestore: {
     title: <Logo className="mx-auto w-40 shrink-0 [&_[fill]]:fill-current [&_[stroke]]:stroke-current" />,
   },
+
+  mysql: {
+    title: <h2 className="text-center text-xl font-medium">MySQL</h2>,
+  },
+
   postgres: {
     title: <h2 className="text-center text-xl font-medium">PostgreSQL</h2>,
   },

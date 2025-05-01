@@ -18,11 +18,11 @@ export async function createUser(db: DB, values: UserValues): Promise<UserRecord
 
   const query = driver.insert(usersTable).values(_values);
 
-  if (db === "singlestore") {
-    const result = await query.$returningId();
-    return { ..._values, id: result[0]!.id };
+  if (db === "postgres") {
+    const result = await query.returning();
+    return result[0]!;
   }
 
-  const result = await query.returning();
-  return result[0]!;
+  const result = await query.$returningId();
+  return { ..._values, id: result[0]!.id };
 }

@@ -1,6 +1,5 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { Separator } from "@/components/ui/separator";
 import { DBSection } from "@/db/components/section";
 import { WSProvider } from "@/ws/components/provider";
 
@@ -12,21 +11,10 @@ export default function Home() {
       <WSProvider>
         <Header />
 
-        <main className="relative container mx-auto flex flex-1 flex-wrap items-stretch gap-8 px-4 max-lg:flex-col">
-          <DBSection
-            className="w-full lg:w-[calc(50%_-_theme(spacing.4))]"
-            db="singlestore"
-          />
-
-          <Separator
-            className="absolute top-0 left-1/2 -translate-x-1/2 max-lg:hidden"
-            orientation="vertical"
-          />
-
-          <DBSection
-            className="w-full lg:w-[calc(50%_-_theme(spacing.4))]"
-            db="postgres"
-          />
+        <main className="relative grid [grid-template-columns:repeat(auto-fit,_minmax(24rem,_1fr))] gap-x-4 gap-y-8 px-4 max-lg:flex-col">
+          <DBSection db="singlestore" />
+          <DBSection db="mysql" />
+          <DBSection db="postgres" />
         </main>
 
         <Footer className="mt-8" />

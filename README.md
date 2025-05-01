@@ -2,7 +2,7 @@
 
 ![Preview](assets/preview.png)
 
-The app demonstrates the performance difference between SingleStore and PostgreSQL in real-time analytics on operational data. It is a demo application built using the SingleStore Free Dev image and a PostgreSQL image.
+The app demonstrates the performance difference between SingleStore, MySQL and PostgreSQL in real-time analytics on operational data. It is a demo application built using the SingleStore Free Dev image, a MySQL image, and a PostgreSQL image.
 
 ## Getting Started
 
@@ -11,7 +11,7 @@ The app demonstrates the performance difference between SingleStore and PostgreS
 3. In the `./apps/db` directory, create a `.env` file based on `.env.example`.
 4. Start the Docker containers by running: `make up`.
 5. Wait 5–10 seconds, then initialize the `singlestore` image by running: `make singlestore-init`.
-6. In the `./packages/singlestore`, and `./packages/postgres` directories, create `.env` files based on the corresponding `.env.example` files.
+6. In the `./packages/singlestore`, `./packages/postgres`, and `./packages/mysql` directories, create `.env` files based on the corresponding `.env.example` files.
 7. From the root directory of the project, push the database schemas by running: `npm run db:push`.
 
 ## Generating and Loading Data

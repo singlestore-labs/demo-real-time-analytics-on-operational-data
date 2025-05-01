@@ -12,7 +12,7 @@ export async function getRandomAccount(db: DB): Promise<AccountRecord | undefine
     .select()
     .from(accountsTable)
     .limit(1)
-    .orderBy(db === "singlestore" ? sql`RAND()` : sql`RANDOM()`);
+    .orderBy(db === "postgres" ? sql`RANDOM()` : sql`RAND()`);
 
   const result = await query;
 

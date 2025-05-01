@@ -35,7 +35,7 @@ function broadcast(event: unknown) {
 try {
   await app.listen({ port: 4000 });
 
-  const dbs = ["singlestore", "postgres"] satisfies DB[];
+  const dbs = ["singlestore", "mysql", "postgres"] satisfies DB[];
 
   setInterval(async () => {
     try {

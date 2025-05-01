@@ -1,3 +1,4 @@
+import { mysql } from "@repo/mysql";
 import { postgres } from "@repo/postgres";
 import { singlestore } from "@repo/singlestore";
 import { sql } from "drizzle-orm";
@@ -21,7 +22,7 @@ const indexQueries = [
 
 (async () => {
   await Promise.all(
-    [singlestore, postgres].map(async (driver) => {
+    [singlestore, mysql, postgres].map(async (driver) => {
       for await (const query of indexQueries) {
         try {
           await (driver as any).execute(sql.raw(query));

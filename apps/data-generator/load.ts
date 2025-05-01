@@ -1,4 +1,5 @@
 import type { DB } from "@repo/db/types";
+import { mysql } from "@repo/mysql";
 import { postgresPool } from "@repo/postgres";
 import { singlestore } from "@repo/singlestore";
 import { sql } from "drizzle-orm";
@@ -16,7 +17,7 @@ const ENTITIES = [
   { table: "transactions", prefix: "transactions" },
 ] as const;
 
-async function loadFileToSQL(driver: typeof singlestore, tableName: string, path: string) {
+async function loadFileToSQL(driver: typeof singlestore | typeof mysql, tableName: string, path: string) {
   await driver.execute(
     sql.raw(`
       LOAD DATA LOCAL INFILE '${path}'
@@ -42,8 +43,8 @@ async function loadFileToPostgres(client: any, tableName: string, path: string) 
   try {
     console.log("Start loading CSVs…");
 
-    const tasks = (["singlestore"] satisfies DB[]).map(async (db) => {
-      const driver = { singlestore }[db];
+    const tasks = (["singlestore", "mysql"] satisfies DB[]).map(async (db) => {
+      const driver = { singlestore, mysql }[db];
       await driver.execute(
         sql.raw(`
         SET GLOBAL local_infile = 1;
@@ -61,6 +62,11 @@ async function loadFileToPostgres(client: any, tableName: string, path: string) 
           await loadFileToSQL(driver, table, filePath);
           await driver.execute(sql.raw("COMMIT;"));
         }
+
+        if (db === "mysql") {
+          const result = (await driver.execute(sql.raw(`SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM ${table};`))) as any;
+          await driver.execute(sql.raw(`ALTER TABLE ${table} AUTO_INCREMENT = ${result[0][0].next_id}; `));
+        }
       }
 
       await driver.execute(
@@ -69,9 +75,12 @@ async function loadFileToPostgres(client: any, tableName: string, path: string) 
           SET autocommit = 1;
           SET unique_checks = 1;
           SET foreign_key_checks = 1;
-          AGGREGATOR SYNC AUTO_INCREMENT;
       `),
       );
+
+      if (db === "singlestore") {
+        await driver.execute(sql.raw(`AGGREGATOR SYNC AUTO_INCREMENT;`));
+      }
     });
 
     const pgTask = (async () => {

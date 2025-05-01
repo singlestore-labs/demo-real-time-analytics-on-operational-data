@@ -11,7 +11,7 @@ export function Header({ className, ...props }: HeaderProps) {
   return (
     <header
       {...props}
-      className={cn("container mx-auto flex items-center justify-between px-4 py-8", className)}
+      className={cn("mx-auto flex w-full items-center justify-between px-4 py-8", className)}
     >
       <div className="flex flex-wrap items-center gap-4">
         <span className="flex w-40 shrink-0 items-center justify-center">

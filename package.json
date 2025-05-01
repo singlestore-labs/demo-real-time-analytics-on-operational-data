@@ -8,7 +8,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
     "check-types": "turbo run check-types",
-    "db:push": "cd ./packages/singlestore && npm run push && cd ../postgres && npm run push",
+    "db:push": "cd ./packages/singlestore && npm run push && cd ../postgres && npm run push && cd ../mysql && npm run push",
     "data:generate": "cd ./apps/data-generator && npm run generate:start",
     "data:load": "cd ./apps/data-generator && npm run load:start",
     "data:indexes:create": "cd ./apps/data-generator && npm run indexes:create"

@@ -22,11 +22,11 @@ export async function createTransaction(db: DB, values: TransactionValues): Prom
   const type = TRANSACTION_TYPES.find(({ id }) => id === _values.typeId)!.name;
   const status = TRANSACTION_STATUSES.find(({ id }) => id === _values.statusId)!.name;
 
-  if (db === "singlestore") {
-    const result = await query.$returningId();
-    return { ..._values, id: result[0]!.id, type, status };
+  if (db === "postgres") {
+    const result = await query.returning();
+    return { ...result[0]!, type, status };
   }
 
-  const result = await query.returning();
-  return { ...result[0]!, type, status };
+  const result = await query.$returningId();
+  return { ..._values, id: result[0]!.id, type, status };
 }
