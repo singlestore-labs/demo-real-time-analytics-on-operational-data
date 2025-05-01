@@ -23,7 +23,7 @@ export function Header({ className, ...props }: HeaderProps) {
 
       <Button asChild>
         <Link
-          href="https://portal.singlestore.com/intention/cloud?utm_source=yaroslav&utm_medium=app&utm_campaign=general-technical&utm_content=real-time-analytics-on-operational-data-why-singlestore-outperforms-traditional-postgres-setups"
+          href="https://portal.singlestore.com/intention/cloud?utm_source=yaroslav&utm_medium=app&utm_campaign=general-technical&utm_content=real-time-analytics-on-operational-data"
           target="_blank"
         >
           Try SingleStore Free

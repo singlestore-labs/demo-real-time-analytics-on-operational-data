@@ -29,4 +29,4 @@ The app demonstrates the performance difference between SingleStore, MySQL and P
 
 ---
 
-[Start With SingleStore – $600 in Free Credits](https://portal.singlestore.com/intention/cloud?utm_source=yaroslav&utm_medium=github&utm_campaign=general-technical&utm_content=real-time-analytics-on-operational-data-why-singlestore-outperforms-traditional-postgres-setups)
+[Start With SingleStore – $600 in Free Credits](https://portal.singlestore.com/intention/cloud?utm_source=yaroslav&utm_medium=github&utm_campaign=general-technical&utm_content=real-time-analytics-on-operational-data)
