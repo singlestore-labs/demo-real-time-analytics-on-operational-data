@@ -12,7 +12,7 @@ import { resolve } from "path";
 const NOW = new Date();
 
 const USERS_NUMBER = 1_000_000;
-const ACCOUNTS_NUMBER = 10_000_000;
+const ACCOUNTS_NUMBER = 1_000_000;
 const TRANSACTIONS_NUMBER = 10_000_000;
 
 const EXPORT_PATH = "./export";
