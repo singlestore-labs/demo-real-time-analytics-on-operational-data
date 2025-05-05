@@ -21,7 +21,7 @@ export function WSProvider({ children }: WSProviderProps) {
     const ws = new WebSocket(url);
 
     ws.addEventListener("open", () => {
-      console.log("WebSocket connected to", url);
+      console.log("WebSocket connected");
     });
 
     ws.addEventListener("message", (event) => {
