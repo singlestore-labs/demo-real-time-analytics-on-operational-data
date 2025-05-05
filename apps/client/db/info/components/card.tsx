@@ -53,7 +53,7 @@ export function DBInfoCard({ className, db, ...props }: DBInfoCards) {
       const message = parseWSMessage(event.data);
       if (message.db !== db) return;
 
-      if (message.type.startsWith("insert")) {
+      if (message.type === "insert.transaction") {
         fetchData();
       }
     };

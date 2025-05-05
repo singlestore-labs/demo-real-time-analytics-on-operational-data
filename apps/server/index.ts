@@ -5,9 +5,9 @@ import { updateAccount } from "@repo/db/account/update";
 import { countRows } from "@repo/db/lib/count-rows";
 import { deleteRowsAfterCreatedAt } from "@repo/db/lib/delete-rows-by-after-created-at";
 import { getFirstCreatedAt } from "@repo/db/lib/get-first-created-at";
-import { TableName } from "@repo/db/lib/get-table";
+import type { TableName } from "@repo/db/lib/get-table";
 import { createTransaction } from "@repo/db/transaction/create";
-import { DB } from "@repo/db/types";
+import type { DB } from "@repo/db/types";
 import { createUser } from "@repo/db/user/create";
 import { generateTransaction } from "@repo/utils/transaction";
 import { generateUser } from "@repo/utils/user";
@@ -16,43 +16,15 @@ import Fastify from "fastify";
 
 type TargetTableName = Extract<TableName, "usersTable" | "accountsTable" | "transactionsTable">;
 
+const DBs = ["singlestore", "mysql", "postgres"] satisfies DB[];
+
 const SIMULATION_INTERVAL = 3000;
 
-const ROWS_TARGET = {
-  usersTable: 1_000_000,
-  accountsTable: 10_000_000,
-  transactionsTable: 10_000_000,
-} satisfies Record<TargetTableName, number>;
+const TRANSACTION_ROWS_TARGET = 10_000_000;
+const TRANSACTIONS_ROW_LIMIT = TRANSACTION_ROWS_TARGET + 5;
+let TRANSACTION_ROW_COUNT = 0;
 
-const ROWS_LIMIT = {
-  usersTable: ROWS_TARGET.usersTable + 1_000_000,
-  accountsTable: ROWS_TARGET.accountsTable + 1_000_000,
-  transactionsTable: ROWS_TARGET.transactionsTable + 1_000_000,
-} satisfies Record<TargetTableName, number>;
-
-const ROWS_COUNT = {
-  singlestore: {
-    usersTable: 0,
-    accountsTable: 0,
-    transactionsTable: 0,
-  },
-  mysql: {
-    usersTable: 0,
-    accountsTable: 0,
-    transactionsTable: 0,
-  },
-  postgres: {
-    usersTable: 0,
-    accountsTable: 0,
-    transactionsTable: 0,
-  },
-} satisfies Record<DB, Record<TargetTableName, number>>;
-
-const IS_RESETTING: Record<TargetTableName, boolean> = {
-  usersTable: false,
-  accountsTable: false,
-  transactionsTable: false,
-};
+let IS_RESETTING = false;
 
 const app = Fastify({ logger: true });
 
@@ -74,51 +46,40 @@ function broadcast(event: unknown) {
   }
 }
 
-async function resetTable(db: DB, table: TargetTableName) {
-  IS_RESETTING[table] = true;
-  const createdAt = await getFirstCreatedAt(db, table);
-  await deleteRowsAfterCreatedAt(db, table, createdAt || new Date());
-  ROWS_COUNT[db][table] = ROWS_TARGET[table];
-  IS_RESETTING[table] = false;
-}
-
-try {
-  await app.listen({ port: 4000, host: "0.0.0.0" });
-
-  const dbs = ["singlestore", "mysql", "postgres"] satisfies DB[];
+async function resetTables() {
+  IS_RESETTING = true;
+  const createdAt = (await getFirstCreatedAt("singlestore", "usersTable")) || new Date();
 
   await Promise.all(
-    dbs.map((db) => {
+    DBs.map((db) => {
       return Promise.all(
-        (["usersTable", "accountsTable", "transactionsTable"] satisfies TargetTableName[]).map(async (tableName) => {
-          ROWS_COUNT[db][tableName] = await countRows(db, tableName);
+        (["usersTable", "accountsTable", "transactionsTable"] satisfies TargetTableName[]).map((tableName) => {
+          return deleteRowsAfterCreatedAt(db, tableName, createdAt);
         }),
       );
     }),
   );
 
+  TRANSACTION_ROW_COUNT = await countRows("singlestore", "transactionsTable");
+  IS_RESETTING = false;
+}
+
+try {
+  await app.listen({ port: 4000, host: "0.0.0.0" });
+
+  TRANSACTION_ROW_COUNT = await countRows("singlestore", "transactionsTable");
+
   setInterval(async () => {
-    if (IS_RESETTING.usersTable || IS_RESETTING.accountsTable) return;
+    if (IS_RESETTING) return;
 
     try {
       const now = new Date();
       const user = generateUser({ createdAt: now });
       await Promise.all(
-        dbs.map(async (db) => {
-          if (ROWS_COUNT[db].usersTable === ROWS_LIMIT.usersTable) {
-            await resetTable(db, "usersTable");
-          }
-
+        DBs.map(async (db) => {
           const userRecord = await createUser(db, user);
-          ROWS_COUNT[db].usersTable++;
           broadcast(createWSMessage({ db, type: "insert.user", payload: userRecord }));
-
-          if (ROWS_COUNT[db].accountsTable === ROWS_LIMIT.accountsTable) {
-            await resetTable(db, "accountsTable");
-          }
-
           const accountRecord = await createAccount(db, { userId: userRecord.id, createdAt: now });
-          ROWS_COUNT[db].accountsTable++;
           broadcast(createWSMessage({ db, type: "insert.account", payload: accountRecord }));
         }),
       );
@@ -128,7 +89,7 @@ try {
   }, SIMULATION_INTERVAL);
 
   setInterval(async () => {
-    if (IS_RESETTING.transactionsTable) return;
+    if (IS_RESETTING) return;
 
     try {
       let [accountFrom, accountTo] = await Promise.all([getRandomAccount("singlestore"), getRandomAccount("singlestore")]);
@@ -143,13 +104,13 @@ try {
       const newAccountToBalance = (+(accountTo!.balance ?? 0) + +(transaction.amount ?? 0)).toFixed(2);
 
       await Promise.all(
-        dbs.map(async (db) => {
-          if (ROWS_COUNT[db].transactionsTable === ROWS_LIMIT.transactionsTable) {
-            await resetTable(db, "transactionsTable");
+        DBs.map(async (db) => {
+          if (db === "singlestore" && TRANSACTION_ROW_COUNT === TRANSACTIONS_ROW_LIMIT) {
+            await resetTables();
           }
 
           const transactionRecord = await createTransaction(db, transaction);
-          ROWS_COUNT[db].transactionsTable++;
+          TRANSACTION_ROW_COUNT++;
           broadcast(createWSMessage({ db, type: "insert.transaction", payload: transactionRecord }));
 
           await Promise.all(
