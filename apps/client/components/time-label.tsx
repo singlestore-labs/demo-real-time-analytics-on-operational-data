@@ -1,3 +1,5 @@
+"use client";
+
 import { formatMilliseconds } from "format-ms";
 import { type ComponentProps, type ReactNode, useEffect, useRef, useState } from "react";
 
