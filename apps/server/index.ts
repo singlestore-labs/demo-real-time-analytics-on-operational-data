@@ -83,7 +83,7 @@ async function resetTable(db: DB, table: TargetTableName) {
 }
 
 try {
-  await app.listen({ port: 4000 });
+  await app.listen({ port: 4000, host: "0.0.0.0" });
 
   const dbs = ["singlestore", "mysql", "postgres"] satisfies DB[];
 
