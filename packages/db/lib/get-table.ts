@@ -3,7 +3,7 @@ import * as mysqlTables from "@repo/mysql/schema";
 import * as postgresTables from "@repo/postgres/schema";
 import * as singlestoreTables from "@repo/singlestore/schema";
 
-type TableName = keyof typeof singlestoreTables | keyof typeof postgresTables | keyof typeof mysqlTables;
+export type TableName = keyof typeof singlestoreTables | keyof typeof postgresTables | keyof typeof mysqlTables;
 
 export function getDBTable<T extends DB, U extends TableName>(db: T, name: U) {
   return (

@@ -9,6 +9,8 @@ import { once } from "events";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { resolve } from "path";
 
+const NOW = new Date();
+
 const USERS_NUMBER = 1_000_000;
 const ACCOUNTS_NUMBER = 10_000_000;
 const TRANSACTIONS_NUMBER = 10_000_000;
@@ -95,7 +97,7 @@ async function generateUsers() {
   await generateChunkedCsv<UserRecord>(
     USERS_NUMBER,
     (i) => {
-      return generateUser({ id: i + 1 });
+      return generateUser({ id: i + 1, createdAt: NOW, updatedAt: NOW });
     },
     "users",
     (record) => {
@@ -115,6 +117,8 @@ async function generateAccounts() {
       return generateAccount({
         id: i + 1,
         userId: faker.number.int({ min: 1, max: USERS_NUMBER }),
+        createdAt: NOW,
+        updatedAt: NOW,
       });
     },
     "accounts",
@@ -143,6 +147,8 @@ async function generateTransactions() {
         id: i + 1,
         accountIdFrom: from,
         accountIdTo: to,
+        createdAt: NOW,
+        updatedAt: NOW,
       });
     },
     "transactions",
