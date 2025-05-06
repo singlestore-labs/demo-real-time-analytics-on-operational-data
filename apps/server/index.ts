@@ -65,7 +65,10 @@ async function resetTables() {
 }
 
 try {
-  await app.listen({ port: 4000, host: "0.0.0.0" });
+  await app.listen({
+    port: +(process.env.PORT || 4000),
+    host: process.env.HOST || "127.0.0.1",
+  });
 
   TRANSACTION_ROW_COUNT = await countRows("singlestore", "transactionsTable");
 
